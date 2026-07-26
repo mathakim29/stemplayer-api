@@ -1,0 +1,41 @@
+import os
+import shutil
+from fastapi import FastAPI, UploadFile, File
+from fastapi.staticfiles import StaticFiles
+from redis import Redis
+from rq import Queue
+from tasks import process_upload, UPLOAD_DIR, EXPORT_DIR
+from utils import generate_code, check_filetype
+
+api = FastAPI()
+redis_conn = Redis(host="localhost", port=6379)
+task_queue = Queue("default", connection=redis_conn)
+
+# Controlled static mount — only ever serves files under EXPORT_DIR,
+# and FastAPI's StaticFiles resolves paths safely (no ../ escapes).
+api.mount("/files", StaticFiles(directory=EXPORT_DIR), name="files")
+
+
+@api.post("/upload/")
+async def upload_file(file: UploadFile = File(...), model: str = "default"):
+    code = generate_code()
+    ext = os.path.splitext(file.filename)[1]
+    filename = f"{code}{ext}"
+    filepath = os.path.join(UPLOAD_DIR, filename)
+
+    check_filetype(file)
+
+    with open(filepath, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    job = task_queue.enqueue(process_upload, filename, model, job_id=code)
+
+    return {"job_id": job.id, "status": "Queued"}
+
+
+@api.get("/status/{job_id}")
+def check_status(job_id: str):
+    job = task_queue.fetch_job(job_id)
+    if not job:
+        return {"error": "Invalid job ID"}
+    return {"status": job.get_status(), "result": job.result}

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+case "$1" in
+
+  build)
+    # Build the image
+    docker build -t stemplayer -f dockerfile .
+    ;;
+
+
+  run)
+    # Run the container
+    docker run -it --rm \
+      --name stemplayer \
+      -p 8000:8000 \
+      -v $(pwd)/src:/app \
+      -v $(pwd)/store:/tmp/asep:Z \
+      -v $(pwd)/run:/app/run \
+      --gpus all \
+      stemplayer ./run
+    ;;
+  *)
+
+  
+    echo "Usage: $0 {build|run}"
+    exit 1
+    ;;
+esac
