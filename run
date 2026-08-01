@@ -1,5 +1,0 @@
-#!/bin/bash
-redis-cli CONFIG SET dir "/redis"
-export PYTHONPYCACHEPREFIX="/tmp/pycache" 
-redis-server & uvicorn main:api --host 0.0.0.0 --port 8000 --reload & rq worker default 
-

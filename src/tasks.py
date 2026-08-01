@@ -1,7 +1,6 @@
 import os
 import logging
-import subprocess
-import getenv
+from audio_separator.separator import Separator
 
 logger = logging.getLogger("uvicorn")
 
@@ -28,47 +27,33 @@ def process_upload(filename: str, modelname: str):
     export_path = os.path.join(EXPORT_DIR, code)
     os.makedirs(export_path, exist_ok=True)
 
-
     logger.info(f"[{code}] Starting processing for file: {filename}")
 
-    output_lines = []
-    command = ["audio-separator", "--model_file_dir", MODEL_DIR, "--output_format=WAV"]
-
-    if (modelname != 'default'):
-        command += ["-m", modelname]
-
-    command += [ "--output_dir",export_path, filepath]
-
     try:
-        process = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            bufsize=1,
+        # Initialize the Python Separator object
+        separator = Separator(
+            output_dir=export_path,
+            model_file_dir=MODEL_DIR,
+            output_format="WAV",
+            log_level=logging.INFO,
         )
 
-        for line in process.stdout:
-            line = line.rstrip()
-            if line:
-                logger.info(f"[{code}] {line}")
-                output_lines.append(line)
+        # Load the specified model (or default if 'default' is requested)
+        if modelname and modelname != "default":
+            separator.load_model(modelname)
+        else:
+            separator.load_model()  # Uses the library's built-in default model
 
-        process.wait()
+        # Run the separation process synchronously
+        output_files = separator.separate(filepath)
 
-        if process.returncode != 0:
-            error_output = "\n".join(output_lines)
-            logger.error(f"[{code}] audio-separator failed with exit code {process.returncode}")
-            return {"error": error_output}
-
-        # Build the list of files audio-separator actually produced,
-        # exposed as URLs under the /files static mount
-        output_files = sorted(os.listdir(export_path))
+        # Sort files and build exposure URLs
+        output_files = sorted(output_files)
         file_urls = [f"/files/{code}/{name}" for name in output_files]
 
         logger.info(f"[{code}] audio-separator succeeded, {len(output_files)} file(s) produced")
+        
         return {
-            "stdout": "\n".join(output_lines) if DEBUG_MODE else 0,
             "output_path": export_path,
             "files": file_urls,
         }
@@ -79,7 +64,8 @@ def process_upload(filename: str, modelname: str):
 
     finally:
         try:
-            os.remove(filepath)
-            logger.info(f"[{code}] Removed processed upload: {filepath}")
+            if os.path.exists(filepath):
+                os.remove(filepath)
+                logger.info(f"[{code}] Removed processed upload: {filepath}")
         except OSError as cleanup_err:
             logger.warning(f"[{code}] Failed to remove upload {filepath}: {cleanup_err}")
