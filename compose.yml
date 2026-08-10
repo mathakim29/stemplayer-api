@@ -25,8 +25,7 @@ services:
       image: dunglas/frankenphp:1.12.7-php8-alpine
       restart: always
       ports:
-        - "8080:80"
-        - "443:443"
+        - "${DEMO_PORT}:80"
       environment:
         SERVER_NAME: ":80"
         SERVER_ROOT: "/demo"

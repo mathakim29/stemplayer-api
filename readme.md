@@ -7,12 +7,14 @@ A RESTful API for audio stem separation using the `audio-separator` library with
 
 ## Installation 
 1. Install Docker Compose 
-1. Clone the repository
-2. Run this:
+2. Clone the repository
+3. Run this:
 
 ```bash
 docker compose --env-file .env up --build 
 ```
+
+4. Run demo on port 8080 (localhost:8080)
 
 ## Technology Stack
 - **Framework**: FastAPI
