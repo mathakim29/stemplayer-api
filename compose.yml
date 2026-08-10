@@ -26,6 +26,7 @@ services:
       restart: always
       ports:
         - "${DEMO_PORT}:80"
+        - "443:443"
       environment:
         SERVER_NAME: ":80"
         SERVER_ROOT: "/demo"
