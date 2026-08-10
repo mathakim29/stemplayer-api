@@ -13,8 +13,16 @@ task_queue = Queue("default", connection=redis_conn)
 
 # Controlled static mount — only ever serves files under EXPORT_DIR,
 # and FastAPI's StaticFiles resolves paths safely (no ../ escapes).
-api.mount("/files", StaticFiles(directory=EXPORT_DIR), name="files")
+api.mount("/export", StaticFiles(directory=EXPORT_DIR), name="files")
 
+from fastapi.middleware.cors import CORSMiddleware
+api.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Or specify ["http://localhost:8080"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @api.post("/upload/")
 async def upload_file(file: UploadFile = File(...), model: str = "default"):
@@ -24,6 +32,7 @@ async def upload_file(file: UploadFile = File(...), model: str = "default"):
     filepath = os.path.join(UPLOAD_DIR, filename)
 
     check_filetype(file)
+    await file.seek(0)
 
     with open(filepath, "wb") as f:
         shutil.copyfileobj(file.file, f)

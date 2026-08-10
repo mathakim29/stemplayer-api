@@ -1,8 +1,9 @@
 import os
 import logging
 from audio_separator.separator import Separator
+import time
 
-logger = logging.getLogger("uvicorn")
+logger = logging.getLogger("hypercorn")
 
 if not logger.handlers:
     handler = logging.StreamHandler()
@@ -28,6 +29,7 @@ def process_upload(filename: str, modelname: str):
     os.makedirs(export_path, exist_ok=True)
 
     logger.info(f"[{code}] Starting processing for file: {filename}")
+    start_time = time.perf_counter()
 
     try:
         # Initialize the Python Separator object
@@ -42,19 +44,22 @@ def process_upload(filename: str, modelname: str):
         if modelname and modelname != "default":
             separator.load_model(modelname)
         else:
-            separator.load_model()  # Uses the library's built-in default model
+            separator.load_model("htdemucs.yaml")  # Uses the library's built-in default model
 
         # Run the separation process synchronously
         output_files = separator.separate(filepath)
 
         # Sort files and build exposure URLs
         output_files = sorted(output_files)
-        file_urls = [f"/files/{code}/{name}" for name in output_files]
+        file_urls = [f"/export/{code}/{name}" for name in output_files]
 
         logger.info(f"[{code}] audio-separator succeeded, {len(output_files)} file(s) produced")
+        # Stop the stopwatch
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
         
         return {
-            "output_path": export_path,
+            "elapsed_time": elapsed_time,
             "files": file_urls,
         }
 

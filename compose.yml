@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  stemplayer:
+    build:
+      context: .
+      dockerfile: dockerfile
+    image: stemplayer
+    ports:
+      - "${API_PORT}:8000"
+    volumes:
+      - /tmp/store:/tmp/asep
+      - ${PWD}/src:/app
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: bash "/app/run.sh"
+
+  # demo purposes 
+  web:
+      image: dunglas/frankenphp:1.12.7-php8-alpine
+      restart: always
+      ports:
+        - "8080:80"
+        - "443:443"
+      environment:
+        SERVER_NAME: ":80"
+        SERVER_ROOT: "/demo"
+      volumes:
+        - ${PWD}/demo:/demo
+        - /tmp/caddy_data:/data
+        - /tmp/caddy_config:/config

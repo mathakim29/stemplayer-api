@@ -6,4 +6,4 @@ export PYTHONPYCACHEPREFIX="/tmp/pycache"
 
 # Force Redis to use this directory from the very millisecond it starts up
 redis-server --dir "$REDIS_DIR" --dbfilename dump.rdb --enable-protected-configs yes &
-uvicorn main:api --host 0.0.0.0 --port 8000 --reload & rq worker default 
+hypercorn main:api --bind 0.0.0.0:8000 --reload & rq worker default
