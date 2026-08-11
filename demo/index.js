@@ -202,7 +202,7 @@ async function pollStatus(jobId) {
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
 
-            if (data.status === 'finished') {
+            if (data.result?.status === 'success') {
                 clearInterval(interval);
                 const elapsed = data.result?.elapsed_time;
                 const timeStr = (elapsed !== undefined && elapsed !== null) ? elapsed.toFixed(2) : '?';
@@ -217,9 +217,9 @@ async function pollStatus(jobId) {
                     console.error('pollStatus: missing result.files', data);
                     setStatus('error', '✗ Completed but no output files were returned.');
                 }
-            } else if (data.status === 'failed') {
+            } else if (data.result?.status === 'error') {
                 clearInterval(interval);
-                setStatus('error', `✗ Processing failed: ${data.result?.error || 'Unknown error'}`);
+                setStatus('error', `✗ Processing failed: ${data.result?.message || 'Unknown error'}`);
                 submitBtn.disabled = false;
             }
         } catch (err) {

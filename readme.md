@@ -310,25 +310,28 @@ done
 ## System Architecture
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+┌─────────────┐      ┌─────────────┐      ┌─────────────┐
 │   Client    │────▶│   FastAPI   │────▶│  Redis RQ   │
-│   (HTTP)    │     │  Endpoint   │     │   Queue     │
-└─────────────┘     └─────────────┘     └─────────────┘
-                                               │
-                                               ▼
-                                        ┌─────────────┐
-                                        │   Worker    │
-                                        │  Process    │
-                                        └─────────────┘
-                                               │
-                                               ▼
-                                        ┌─────────────┐
-                                        │  audio-     │
-                                        │  separator  │
-                                        └─────────────┘
+│   (HTTP)    │      │  Endpoint   │      │   Queue     │
+└─────────────┘      └─────────────┘      └─────────────┘
+                                                    │
+                                                    ▼
+                                            ┌─────────────┐
+                                            │   Worker    │
+                                            │  Process    │
+                                            └─────────────┘
+                                                    │
+                                                    ▼
+                                                ┌─────────────┐
+                                                │  audio-     │
+                                                │  separator  │
+                                                └─────────────┘
 ```
-
-
+## Demo Video
+<video width="640" height="480" controls>
+  <source src="demo/demo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 ## Supported File Formats
 
@@ -339,8 +342,6 @@ done
 | FLAC | `.flac` | ✅ Supported |
 | M4A | `.m4a` | ✅ Supported |
 | OGG | `.ogg` | ✅ Supported |
-
-
 
 
 ## Error Codes
@@ -354,28 +355,6 @@ done
 | 500 | Internal server error |
 | 503 | Service unavailable (Redis/queue down) |
 
-
-## Configuration
-
-### Environment Variables
-```bash
-# Server
-PORT=8000
-HOST=127.0.0.1
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# File paths
-UPLOAD_DIR=/tmp/asep/uploads
-EXPORT_DIR=/tmp/asep/exports
-MODEL_DIR=/tmp/asep/models
-
-# Model
-DEFAULT_MODEL=htdemucs
-OUTPUT_FORMAT=WAV
-```
 
 ## Performance Considerations
 

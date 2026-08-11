@@ -1,7 +1,7 @@
 import os
 import logging
-from audio_separator.separator import Separator
 import time
+from audio_separator.separator import Separator
 
 logger = logging.getLogger("hypercorn")
 
@@ -32,7 +32,6 @@ def process_upload(filename: str, modelname: str):
     start_time = time.perf_counter()
 
     try:
-        # Initialize the Python Separator object
         separator = Separator(
             output_dir=export_path,
             model_file_dir=MODEL_DIR,
@@ -40,37 +39,38 @@ def process_upload(filename: str, modelname: str):
             log_level=logging.INFO,
         )
 
-        # Load the specified model (or default if 'default' is requested)
-        if modelname and modelname != "default":
-            separator.load_model(modelname)
-        else:
-            separator.load_model("htdemucs.yaml")  # Uses the library's built-in default model
+        model_to_load = modelname if modelname and modelname != "default" else "htdemucs.yaml"
+        separator.load_model(model_to_load)
 
-        # Run the separation process synchronously
         output_files = separator.separate(filepath)
-
-        # Sort files and build exposure URLs
         output_files = sorted(output_files)
         file_urls = [f"/export/{code}/{name}" for name in output_files]
 
-        logger.info(f"[{code}] audio-separator succeeded, {len(output_files)} file(s) produced")
-        # Stop the stopwatch
-        end_time = time.perf_counter()
-        elapsed_time = end_time - start_time
+        elapsed_time = time.perf_counter() - start_time
+        logger.info(f"[{code}] Succeeded in {elapsed_time:.2f}s, {len(output_files)} file(s) produced")
         
         return {
+            "status": "success",
             "elapsed_time": elapsed_time,
             "files": file_urls,
         }
 
     except Exception as e:
-        logger.error(f"[{code}] audio-separator raised an exception: {e}")
-        return {"error": str(e)}
+            error_type = type(e).__name__
+            formatted_error = f"[{error_type}] {str(e)}"
+            logger.error(f"[{code}] Task encountered error: {formatted_error}")
+            
+            return {
+                "status": "error",
+                "code": code,
+                "error_type": error_type,
+                "message": str(e)
+            }
 
     finally:
-        try:
-            if os.path.exists(filepath):
+        if os.path.exists(filepath):
+            try:
                 os.remove(filepath)
-                logger.info(f"[{code}] Removed processed upload: {filepath}")
-        except OSError as cleanup_err:
-            logger.warning(f"[{code}] Failed to remove upload {filepath}: {cleanup_err}")
+                logger.info(f"[{code}] Cleaned up input: {filepath}")
+            except OSError as cleanup_err:
+                logger.warning(f"[{code}] Cleanup failed: {cleanup_err}")

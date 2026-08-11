@@ -67,7 +67,7 @@ def check_status(job_id: str):
     job = task_queue.fetch_job(job_id)
     if not job:
         return {"error": "Invalid job ID"}
-    return {"status": job.get_status(), "result": job.result}
+    return {"progress": job.get_status(), "result": job.result}
 
 @api.get("/list-models", response_class=HTMLResponse)
 async def list_models():
