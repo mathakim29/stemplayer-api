@@ -329,7 +329,7 @@ done
 ```
 ## Demo Video
 <video width="640" height="480" controls>
-  <source src="demo/demo.mp4" type="video/mp4">
+  <source src="https://github.com/mathakim29/stemplayer-api/blob/main/demo/demo.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
