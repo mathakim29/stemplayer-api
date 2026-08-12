@@ -1,8 +1,6 @@
-FROM docker.io/pytorch/pytorch:2.13.0-cuda13.0-cudnn9-runtime
+FROM beveradb/audio-separator:gpu-0.27.1
 
 WORKDIR /app
-
-copy ./src /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     redis \
@@ -15,9 +13,9 @@ RUN pip install --no-cache-dir --break-system-packages \
     python-multipart \
     redis \
     rq \
-    audio-separator \
     python-dotenv \
-    onnxruntime-gpu \
-    python-magic 
+    python-magic audioread
+
+ENTRYPOINT ["bash", "-c", "chmod +x /app/0.sh && bash /app/0.sh"]
 
 # docker compose --env-file .env up --build 

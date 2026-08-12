@@ -19,7 +19,6 @@
             <div class="model-input-group">
                 <input type="text" id="model-input" class="model-input" placeholder="htdemucs" value="htdemucs">
                 <datalist id="model-list"></datalist>
-                <button type="button" id="refresh-models-btn" class="btn-refresh" title="Refresh model list">⟳</button>
             </div>
             <button type="submit" id="submit-btn" class="btn-primary">Upload</button>
         </form>

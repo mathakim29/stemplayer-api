@@ -3,7 +3,8 @@
 REDIS_DIR="/tmp/asep/redis_data"
 mkdir -p "$REDIS_DIR"
 export PYTHONPYCACHEPREFIX="/tmp/pycache" 
+sed -i '4s/^/# /' redis.conf
 
 # Force Redis to use this directory from the very millisecond it starts up
-redis-server --dir "$REDIS_DIR" --dbfilename dump.rdb --enable-protected-configs yes &
+redis-server --dir "$REDIS_DIR" --dbfilename dump.rdb &
 hypercorn main:api --bind 0.0.0.0:8000 --reload & rq worker default

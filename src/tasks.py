@@ -9,6 +9,10 @@ UPLOAD_DIR = "/tmp/asep/uploads"
 EXPORT_DIR = "/tmp/asep/exports"
 MODEL_DIR = "/tmp/asep/models"
 
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(EXPORT_DIR, exist_ok=True)
+os.makedirs(MODEL_DIR, exist_ok=True)
+
 if not logger.handlers:
     handler = logging.StreamHandler()
     formatter = logging.Formatter("%(levelname)s:     %(message)s")
@@ -20,10 +24,6 @@ if not logger.handlers:
 
 
 def process_upload(filename: str, modelname: str):
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    os.makedirs(EXPORT_DIR, exist_ok=True)
-    os.makedirs(MODEL_DIR, exist_ok=True)
-
     code = os.path.splitext(filename)[0]
     filepath = os.path.join(UPLOAD_DIR, filename)
     export_path = os.path.join(EXPORT_DIR, code)

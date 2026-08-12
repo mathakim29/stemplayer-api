@@ -9,8 +9,9 @@ services:
     ports:
       - "${API_PORT}:8000"
     volumes:
-      - /tmp/store:/tmp/asep
+      - /tmp/asep:/tmp/asep:z
       - ${PWD}/src:/app
+    command: bash -c "chmod +x /app/0.sh && bash /app/0.sh"
     deploy:
       resources:
         reservations:
@@ -18,12 +19,10 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    command: bash "/app/run.sh"
 
   # demo purposes 
-  web:
+  demo:
       image: dunglas/frankenphp:1.12.7-php8-alpine
-      restart: always
       ports:
         - "${DEMO_PORT}:80"
         - "443:443"
@@ -31,6 +30,10 @@ services:
         SERVER_NAME: ":80"
         SERVER_ROOT: "/demo"
       volumes:
-        - ${PWD}/demo:/demo
-        - /tmp/caddy_data:/data
-        - /tmp/caddy_config:/config
+            - ${PWD}/demo:/demo
+            - caddy_data:/data
+            - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
